@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Website</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .menu-item {
+            display: block;
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .menu-item:hover {
+            background-color: #e9ecef;
+        }
+
+        .menu-item.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        /* Content styles */
+        .content {
+            margin-left: 250px;
+            padding: 30px;
+            flex: 1;
+        }
+
+        /* Mobile styles */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+                z-index: 1000;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+            }
+
+            .menu-toggle {
+                display: block;
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1001;
+                background: #0d6efd;
+                color: white;
+                border: none;
+                padding: 10px;
+                border-radius: 5px;
+                cursor: pointer;
+            }
+        }
+    </style>
+</head>
+<body>
+    <button class="menu-toggle" onclick="toggleMenu()" style="display: none;">☰ Menu</button>
+
+    <div class="sidebar" id="sidebar">
+        <h1>My Website</h1>
+        <nav>
+            <a class="menu-item active" onclick="loadPage('./pages/gencode.html', this)">Trang chủ</a>
+            <a class="menu-item" onclick="loadPage('./pages/calculate.htm', this)">Giới thiệu</a>
+            <a class="menu-item" onclick="loadPage('services.html', this)">Dịch vụ</a>
+            <a class="menu-item" onclick="loadPage('contact.html', this)">Liên hệ</a>
+        </nav>
+    </div>
+
+    <div class="content" id="content">
+        <!-- Nội dung sẽ được tải vào đây -->
+    </div>
+
+    <script>
+        // Hàm tải nội dung từ file HTML khác
+        function loadPage(page, menuItem) {
+            fetch(page)
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('content').innerHTML = data;
+                    
+                    // Cập nhật trạng thái active của menu
+                    const menuItems = document.getElementsByClassName('menu-item');
+                    for (let item of menuItems) {
+                        item.classList.remove('active');
+                    }
+                    menuItem.classList.add('active');
+
+                    // Đóng sidebar trên mobile sau khi chọn menu
+                    if (window.innerWidth <= 768) {
+                        toggleMenu();
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('content').innerHTML = '<p>Error loading page: ' + error.message + '</p>';
+                });
+        }
+
+        // Hiển thị/ẩn menu trên mobile
+        function toggleMenu() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('active');
+        }
+
+        // Hiển thị/ẩn nút toggle menu trên mobile
+        function checkScreenSize() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            if (window.innerWidth <= 768) {
+                menuToggle.style.display = 'block';
+            } else {
+                menuToggle.style.display = 'none';
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        }
+
+        // Kiểm tra kích thước màn hình khi load trang và resize
+        window.addEventListener('load', () => {
+            checkScreenSize();
+            // Tải trang mặc định
+            loadPage('home.html', document.querySelector('.menu-item'));
+        });
+        window.addEventListener('resize', checkScreenSize);
+    </script>
+</body>
+</html>

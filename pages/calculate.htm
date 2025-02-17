@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <title>Calculating Percentages</title>
+    <script>
+        function calculate() {
+            const x1 = parseFloat(document.getElementById('inputX1').value);
+            const y1 = parseFloat(document.getElementById('inputY1').value);
+            const x2 = parseFloat(document.getElementById('inputX2').value);
+            const y2 = parseFloat(document.getElementById('inputY2').value);
+            const x3 = parseFloat(document.getElementById('inputX3').value);
+            const y3 = parseFloat(document.getElementById('inputY3').value);
+
+            // Tính toán
+            if (!isNaN(x1) && !isNaN(y1)) {
+                const percentOfY1 = (x1 / 100) * y1;  
+                document.getElementById('result1').innerText = `${percentOfY1.toFixed(2)}`;
+            } else {
+                document.getElementById('result1').innerText = '';
+            }
+
+            if (!isNaN(x2) && !isNaN(y2)) {
+                const xIsWhatPercentOfY2 = (x2 / y2) * 100;
+                document.getElementById('result2').innerText = `${xIsWhatPercentOfY2.toFixed(2)} %`;
+            } else {
+                document.getElementById('result2').innerText = '';
+            }
+
+            if (!isNaN(x3) && !isNaN(y3)) {
+                const percentageChange3 = ((y3 - x3) / x3) * 100;
+                document.getElementById('result3').innerText = `${percentageChange3.toFixed(2)} %`;
+            } else {
+                document.getElementById('result3').innerText = '';
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h1 class="text-xl font-semibold mb-4">Tính Toán Phần Trăm</h1>
+
+        <!-- Tính X% của Y -->
+        <div class="flex items-center mb-4" style="width: 700px;">
+            <span>What is</span>
+            <input id="inputX1" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập X" oninput="calculate()">
+            <span>% of</span>
+            <input id="inputY1" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập Y" oninput="calculate()">
+            <span class="mx-2">=</span>
+            <span id="result1" class="ml-2 font-semibold"></span>
+        </div>
+
+        <!-- Tính X là bao nhiêu phần trăm của Y -->
+        <div class="flex items-center mb-4" style="width: 700px;">
+            <input id="inputX2" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập X" oninput="calculate()">
+            <span>is what percent of</span>
+            <input id="inputY2" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập Y" oninput="calculate()">
+            <span class="mx-2">=</span>
+            <span id="result2" class="ml-2 font-semibold"></span>
+        </div>
+
+        <!-- Tính tỷ lệ tăng/giảm từ X đến Y -->
+        <div class="flex items-center mb-4" style="width: 700px;">
+            <span>From</span>
+            <input id="inputX3" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập X" oninput="calculate()">
+            <span>to</span>
+            <input id="inputY3" type="number" class="mt-1 p-2 border border-gray-300 rounded mx-2 w-1/4" placeholder="Nhập Y" oninput="calculate()">
+            <span class="mx-2">=</span>
+            <span id="result3" class="ml-2 font-semibold"></span>
+        </div>
+    </div>
+</body>
+</html>
