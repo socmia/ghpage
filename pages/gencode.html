@@ -270,6 +270,7 @@ V_ARG_12,   mode=IN, jdbcType=VARCHAR
         parameterList,
         procName
       ) {
+        const resultType = procType === 'REG' ? `parameterType="java.util.Map"` : `resultType="java.util.HashMap"`
         const params = parameterList
           .split("\n")
           .map((line) => line.trim())
@@ -287,9 +288,10 @@ V_ARG_12,   mode=IN, jdbcType=VARCHAR
             ? `\n            , #{V_ERR, 	    mode=OUT, jdbcType=VARCHAR}
 	    , #{V_RETURN,   mode=OUT, jdbcType=VARCHAR}`
             : "\n            , #{OUTCURSOR  , mode=OUT, jdbcType=CURSOR, javaType=java.sql.ResultSet,resultMap=test}";
-        const mapperCode = `<select id="${methodName}" statementType="CALLABLE" resultType="java.util.HashMap">
+        const mapperCode = `<select id="${methodName}" statementType="CALLABLE" ${resultType}>
     /* [${mapperName}] ${daoName}.${methodName} */ 
         CALL ${procName}( 
+        #{COMPANYCD,  mode=IN, jdbcType=VARCHAR}
 ${params} ${result}
             ) 
 </select>`;
