@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Lý Chi Phí Xe</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .screen {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        h2 {
+            color: #2c3e50;
+            margin-top: 0;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        select {
+            cursor: pointer;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .link {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #3498db;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .success {
+            color: #27ae60;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .expense-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+        }
+        .expense-details {
+            flex-grow: 1;
+        }
+        .expense-type {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        .expense-amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .expense-date, .expense-desc, .expense-km {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .nav-buttons button {
+            margin: 0 5px;
+            flex: 1;
+        }
+        .logout-btn {
+            background-color: #e74c3c;
+        }
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Màn hình đăng ký -->
+        <div id="register-screen" class="screen active">
+            <h2>Đăng Ký Tài Khoản</h2>
+            <div class="form-group">
+                <label for="reg-email">Email *</label>
+                <input type="email" id="reg-email" required placeholder="Nhập email của bạn">
+                <div id="reg-email-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="reg-phone">Số điện thoại *</label>
+                <input type="tel" id="reg-phone" required placeholder="Nhập số điện thoại">
+                <div id="reg-phone-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="reg-password">Mật khẩu *</label>
+                <input type="password" id="reg-password" required placeholder="Tạo mật khẩu">
+                <div id="reg-password-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="reg-name">Họ và tên</label>
+                <input type="text" id="reg-name" placeholder="Nhập họ và tên">
+            </div>
+            <button id="register-btn">Đăng Ký</button>
+            <div id="register-message" class="success"></div>
+            <a class="link" id="goto-login">Đã có tài khoản? Đăng nhập ngay</a>
+        </div>
+
+        <!-- Màn hình đăng nhập -->
+        <div id="login-screen" class="screen">
+            <h2>Đăng Nhập</h2>
+            <div class="form-group">
+                <label for="login-email">Email *</label>
+                <input type="email" id="login-email" required placeholder="Nhập email của bạn">
+                <div id="login-email-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="login-phone">Số điện thoại *</label>
+                <input type="tel" id="login-phone" required placeholder="Nhập số điện thoại">
+                <div id="login-phone-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="login-password">Mật khẩu *</label>
+                <input type="password" id="login-password" required placeholder="Nhập mật khẩu">
+                <div id="login-password-error" class="error"></div>
+            </div>
+            <button id="login-btn">Đăng Nhập</button>
+            <div id="login-message" class="error"></div>
+            <a class="link" id="goto-register">Chưa có tài khoản? Đăng ký ngay</a>
+        </div>
+
+        <!-- Màn hình thêm dữ liệu chi phí -->
+        <div id="expense-screen" class="screen">
+            <h2>Thêm Chi Phí Xe</h2>
+            <div class="form-group">
+                <label for="expense-type">Loại phí *</label>
+                <select id="expense-type" required>
+                    <option value="">-- Chọn loại phí --</option>
+                    <option value="Xăng">Xăng</option>
+                    <option value="Sửa chữa">Sửa chữa</option>
+                    <option value="Cầu đường">Cầu đường</option>
+                    <option value="Gửi xe">Gửi xe</option>
+                </select>
+                <div id="expense-type-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="expense-amount">Số tiền (VND) *</label>
+                <input type="number" id="expense-amount" required placeholder="Nhập số tiền">
+                <div id="expense-amount-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="expense-desc">Mô tả</label>
+                <textarea id="expense-desc" rows="3" placeholder="Nhập mô tả chi tiết"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="expense-date">Ngày sử dụng *</label>
+                <input type="date" id="expense-date" required>
+                <div id="expense-date-error" class="error"></div>
+            </div>
+            <div class="form-group">
+                <label for="expense-km">Số km</label>
+                <input type="number" id="expense-km" placeholder="Nhập số km">
+            </div>
+            <button id="add-expense-btn">Thêm Chi Phí</button>
+            <div id="expense-message" class="success"></div>
+            
+            <div class="nav-buttons">
+                <button id="view-expenses-btn">Xem Danh Sách</button>
+                <button id="logout-btn" class="logout-btn">Đăng Xuất</button>
+            </div>
+        </div>
+
+        <!-- Màn hình danh sách chi phí -->
+        <div id="expense-list-screen" class="screen">
+            <h2>Danh Sách Chi Phí</h2>
+            <div id="expenses-container">
+                <!-- Dữ liệu chi phí sẽ được hiển thị ở đây -->
+            </div>
+            <div class="nav-buttons">
+                <button id="back-to-add-btn">Thêm Chi Phí Mới</button>
+                <button id="list-logout-btn" class="logout-btn">Đăng Xuất</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Khởi tạo Supabase client
+        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
+        const SUPABASE_KEY = 'your-supabase-anon-key';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Lấy phần tử DOM
+        const registerScreen = document.getElementById('register-screen');
+        const loginScreen = document.getElementById('login-screen');
+        const expenseScreen = document.getElementById('expense-screen');
+        const expenseListScreen = document.getElementById('expense-list-screen');
+
+        // Chuyển đổi giữa các màn hình
+        function showScreen(screen) {
+            registerScreen.classList.remove('active');
+            loginScreen.classList.remove('active');
+            expenseScreen.classList.remove('active');
+            expenseListScreen.classList.remove('active');
+            screen.classList.add('active');
+        }
+
+        // Liên kết nút chuyển đổi
+        document.getElementById('goto-login').addEventListener('click', () => showScreen(loginScreen));
+        document.getElementById('goto-register').addEventListener('click', () => showScreen(registerScreen));
+        document.getElementById('view-expenses-btn').addEventListener('click', () => {
+            loadExpenses();
+            showScreen(expenseListScreen);
+        });
+        document.getElementById('back-to-add-btn').addEventListener('click', () => showScreen(expenseScreen));
+        
+        // Xử lý đăng xuất
+        function handleLogout() {
+            supabase.auth.signOut().then(() => {
+                showScreen(loginScreen);
+                document.getElementById('login-message').textContent = 'Đã đăng xuất thành công';
+                setTimeout(() => {
+                    document.getElementById('login-message').textContent = '';
+                }, 3000);
+            });
+        }
+        
+        document.getElementById('logout-btn').addEventListener('click', handleLogout);
+        document.getElementById('list-logout-btn').addEventListener('click', handleLogout);
+        
+        // Kiểm tra trạng thái đăng nhập khi tải trang
+        window.addEventListener('DOMContentLoaded', async () => {
+            const { data } = await supabase.auth.getSession();
+            if (data.session) {
+                showScreen(expenseScreen);
+            } else {
+                showScreen(loginScreen);
+            }
+        });
+
+        // Xử lý đăng ký
+        document.getElementById('register-btn').addEventListener('click', async () => {
+            // Lấy dữ liệu form
+            const email = document.getElementById('reg-email').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const password = document.getElementById('reg-password').value.trim();
+            const name = document.getElementById('reg-name').value.trim();
+            
+            // Reset thông báo lỗi
+            document.getElementById('reg-email-error').textContent = '';
+            document.getElementById('reg-phone-error').textContent = '';
+            document.getElementById('reg-password-error').textContent = '';
+            
+            // Kiểm tra dữ liệu
+            let isValid = true;
+            
+            if (!email) {
+                document.getElementById('reg-email-error').textContent = 'Email là bắt buộc';
+                isValid = false;
+            }
+            
+            if (!phone) {
+                document.getElementById('reg-phone-error').textContent = 'Số điện thoại là bắt buộc';
+                isValid = false;
+            }
+            
+            if (!password) {
+                document.getElementById('reg-password-error').textContent = 'Mật khẩu là bắt buộc';
+                isValid = false;
+            } else if (password.length < 6) {
+                document.getElementById('reg-password-error').textContent = 'Mật khẩu phải có ít nhất 6 ký tự';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Đăng ký người dùng với Supabase
+            const { error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        phone,
+                        name: name || ''
+                    }
+                }
+            });
+            
+            if (error) {
+                document.getElementById('register-message').textContent = error.message;
+                document.getElementById('register-message').className = 'error';
+            } else {
+                document.getElementById('register-message').textContent = 'Đăng ký thành công! Vui lòng kiểm tra email để xác nhận.';
+                document.getElementById('register-message').className = 'success';
+                
+                // Xóa form
+                document.getElementById('reg-email').value = '';
+                document.getElementById('reg-phone').value = '';
+                document.getElementById('reg-password').value = '';
+                document.getElementById('reg-name').value = '';
+                
+                // Chuyển sang màn hình đăng nhập sau vài giây
+                setTimeout(() => {
+                    showScreen(loginScreen);
+                    document.getElementById('register-message').textContent = '';
+                }, 3000);
+            }
+        });
+
+        // Xử lý đăng nhập
+        document.getElementById('login-btn').addEventListener('click', async () => {
+            // Lấy dữ liệu form
+            const email = document.getElementById('login-email').value.trim();
+            const phone = document.getElementById('login-phone').value.trim();
+            const password = document.getElementById('login-password').value.trim();
+            
+            // Reset thông báo lỗi
+            document.getElementById('login-email-error').textContent = '';
+            document.getElementById('login-phone-error').textContent = '';
+            document.getElementById('login-password-error').textContent = '';
+            document.getElementById('login-message').textContent = '';
+            
+            // Kiểm tra dữ liệu
+            let isValid = true;
+            
+            if (!email) {
+                document.getElementById('login-email-error').textContent = 'Email là bắt buộc';
+                isValid = false;
+            }
+            
+            if (!phone) {
+                document.getElementById('login-phone-error').textContent = 'Số điện thoại là bắt buộc';
+                isValid = false;
+            }
+            
+            if (!password) {
+                document.getElementById('login-password-error').textContent = 'Mật khẩu là bắt buộc';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Đăng nhập với Supabase
+            const { error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            });
+            
+            if (error) {
+                document.getElementById('login-message').textContent = error.message;
+                document.getElementById('login-message').className = 'error';
+            } else {
+                // Kiểm tra số điện thoại đã đăng ký
+                const { data: user } = await supabase.auth.getUser();
+                
+                if (user && user.user && user.user.user_metadata.phone !== phone) {
+                    await supabase.auth.signOut();
+                    document.getElementById('login-message').textContent = 'Số điện thoại không khớp với tài khoản';
+                    document.getElementById('login-message').className = 'error';
+                    return;
+                }
+                
+                // Đăng nhập thành công
+                document.getElementById('login-email').value = '';
+                document.getElementById('login-phone').value = '';
+                document.getElementById('login-password').value = '';
+                
+                showScreen(expenseScreen);
+            }
+        });
+
+        // Xử lý thêm chi phí
+        document.getElementById('add-expense-btn').addEventListener('click', async () => {
+            // Lấy dữ liệu form
+            const type = document.getElementById('expense-type').value;
+            const amount = document.getElementById('expense-amount').value;
+            const desc = document.getElementById('expense-desc').value;
+            const date = document.getElementById('expense-date').value;
+            const km = document.getElementById('expense-km').value;
+            
+            // Reset thông báo lỗi
+            document.getElementById('expense-type-error').textContent = '';
+            document.getElementById('expense-amount-error').textContent = '';
+            document.getElementById('expense-date-error').textContent = '';
+            
+            // Kiểm tra dữ liệu
+            let isValid = true;
+            
+            if (!type) {
+                document.getElementById('expense-type-error').textContent = 'Vui lòng chọn loại phí';
+                isValid = false;
+            }
+            
+            if (!amount || amount <= 0) {
+                document.getElementById('expense-amount-error').textContent = 'Vui lòng nhập số tiền hợp lệ';
+                isValid = false;
+            }
+            
+            if (!date) {
+                document.getElementById('expense-date-error').textContent = 'Vui lòng chọn ngày';
+                isValid = false;
+            }
+            
+            if (!isValid) return;
+            
+            // Lấy ID người dùng hiện tại
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                showScreen(loginScreen);
+                return;
+            }
+            
+            // Thêm chi phí vào Supabase
+            const { error } = await supabase
+                .from('expenses')
+                .insert({
+                    user_id: user.id,
+                    type,
+                    amount: Number(amount),
+                    description: desc || '',
+                    date,
+                    kilometers: km ? Number(km) : null
+                });
+            
+            if (error) {
+                document.getElementById('expense-message').textContent = error.message;
+                document.getElementById('expense-message').className = 'error';
+            } else {
+                document.getElementById('expense-message').textContent = 'Đã thêm chi phí thành công!';
+                document.getElementById('expense-message').className = 'success';
+                
+                // Xóa form
+                document.getElementById('expense-type').value = '';
+                document.getElementById('expense-amount').value = '';
+                document.getElementById('expense-desc').value = '';
+                document.getElementById('expense-date').value = '';
+                document.getElementById('expense-km').value = '';
+                
+                // Xóa thông báo sau vài giây
+                setTimeout(() => {
+                    document.getElementById('expense-message').textContent = '';
+                }, 3000);
+            }
+        });
+
+        // Hàm tải danh sách chi phí
+        async function loadExpenses() {
+            const expensesContainer = document.getElementById('expenses-container');
+            expensesContainer.innerHTML = '<p>Đang tải dữ liệu...</p>';
+            
+            // Lấy ID người dùng hiện tại
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            if (!user) {
+                showScreen(loginScreen);
+                return;
+            }
+            
+            // Truy vấn chi phí từ Supabase
+            const { data, error } = await supabase
+                .from('expenses')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('date', { ascending: false });
+            
+            if (error) {
+                expensesContainer.innerHTML = `<p class="error">Lỗi: ${error.message}</p>`;
+                return;
+            }
+            
+            if (!data || data.length === 0) {
+                expensesContainer.innerHTML = '<p>Chưa có dữ liệu chi phí nào.</p>';
+                return;
+            }
+            
+            // Hiển thị danh sách chi phí
+            expensesContainer.innerHTML = '';
+            data.forEach(expense => {
+                const dateObj = new Date(expense.date);
+                const formattedDate = dateObj.toLocaleDateString('vi-VN');
+                const formattedAmount = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(expense.amount);
+                
+                const expenseElement = document.createElement('div');
+                expenseElement.className = 'expense-item';
+                expenseElement.innerHTML = `
+                    <div class="expense-details">
+                        <div class="expense-type">${expense.type}</div>
+                        <div class="expense-amount">${formattedAmount}</div>
+                        <div class="expense-date">${formattedDate}</div>
+                        ${expense.description ? `<div class="expense-desc">${expense.description}</div>` : ''}
+                        ${expense.kilometers ? `<div class="expense-km">${expense.kilometers} km</div>` : ''}
+                    </div>
+                `;
+                expensesContainer.appendChild(expenseElement);
+            });
+        }
+    </script>
+</body>
+</html>
