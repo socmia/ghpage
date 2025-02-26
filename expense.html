@@ -236,8 +236,8 @@
 
     <script>
         // Khởi tạo Supabase client
-        const SUPABASE_URL = 'https://your-supabase-url.supabase.co';
-        const SUPABASE_KEY = 'your-supabase-anon-key';
+        const SUPABASE_URL = 'https://iavtuyaojyltyjtedqnw.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhdnR1eWFvanlsdHlqdGVkcW53Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDA0NzMxMzUsImV4cCI6MjA1NjA0OTEzNX0.wKWcgnOSzuSbj1APexQmHe3am_Kb8wLIwUHkLVnhQCs';
         const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         // Lấy phần tử DOM
@@ -256,8 +256,13 @@
         }
 
         // Liên kết nút chuyển đổi
-        document.getElementById('goto-login').addEventListener('click', () => showScreen(loginScreen));
-        document.getElementById('goto-register').addEventListener('click', () => showScreen(registerScreen));
+       document.getElementById('goto-login').addEventListener('click', function() {
+            showScreen(loginScreen);
+        });
+        
+        document.getElementById('goto-register').addEventListener('click', function() {
+            showScreen(registerScreen);
+        });
         document.getElementById('view-expenses-btn').addEventListener('click', () => {
             loadExpenses();
             showScreen(expenseListScreen);
